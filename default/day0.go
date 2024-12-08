@@ -7,7 +7,7 @@ import (
 	"os"
 )
 
-func read_lines(filename string) []string {
+func readLines(filename string) []string {
 	file, err := os.Open(filename)
 	if err != nil {
 		log.Fatal(err)
@@ -22,8 +22,8 @@ func read_lines(filename string) []string {
 }
 
 func main() {
-	//input_file := "inputtest2"
-	input_file := "input"
-	lines := read_lines(input_file)
+	//inputFile := "inputtest2"
+	inputFile := "input"
+	lines := readLines(inputFile)
 	fmt.Println(lines)
 }
