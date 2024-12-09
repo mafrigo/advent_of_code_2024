@@ -139,6 +139,6 @@ func main() {
 	//Problem 2
 	finalRepresentation2 := reorder2(extendedRepresentation, line)
 	fmt.Println(finalRepresentation2)
-	fmt.Println("checksum:")
+	fmt.Println("checksum 2:")
 	fmt.Println(getChecksum(finalRepresentation2))
 }
