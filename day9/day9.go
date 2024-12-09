@@ -52,7 +52,7 @@ func getChecksum(representation []string) int {
 	return checksum
 }
 
-func reorder1(representation []string) []string {
+func reorder(representation []string) []string {
 	for ichar, char := range representation {
 		if string(char) == "." {
 			for j := len(representation) - 1; j >= 0; j-- {
@@ -72,7 +72,7 @@ func reorder1(representation []string) []string {
 	return representation
 }
 
-func reorder2(representation []string) []string {
+func reorderByBlock(representation []string) []string {
 	lastFileId := "."
 	for j := len(representation) - 1; j >= 0; j-- {
 		fileId := string(representation[j])
@@ -127,15 +127,15 @@ func main() {
 	//Problem 1
 	extendedRepresentation := extendRepresentation(line)
 	//fmt.Println(extendedRepresentation)
-	finalRepresentation := reorder1(extendedRepresentation)
+	finalRepresentation := reorder(extendedRepresentation)
 	//fmt.Println(finalRepresentation)
-	fmt.Println("checksum:")
+	fmt.Println("checksum (part 1):")
 	fmt.Println(getChecksum(finalRepresentation))
 
 	//Problem 2
 	extendedRepresentation2 := extendRepresentation(line)
-	finalRepresentation2 := reorder2(extendedRepresentation2)
+	finalRepresentation2 := reorderByBlock(extendedRepresentation2)
 	//fmt.Println(finalRepresentation2)
-	fmt.Println("checksum 2:")
+	fmt.Println("checksum (part 2):")
 	fmt.Println(getChecksum(finalRepresentation2))
 }
