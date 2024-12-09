@@ -52,65 +52,62 @@ func getChecksum(representation []string) int {
 	return checksum
 }
 
-func reorder1(extendedRepresentation []string) []string {
-	var finalRepresentation []string
-	copy(finalRepresentation, extendedRepresentation)
-	for ichar, char := range finalRepresentation {
+func reorder1(representation []string) []string {
+	for ichar, char := range representation {
 		if string(char) == "." {
-			for j := len(finalRepresentation) - 1; j >= 0; j-- {
-				//fmt.Println(j, ichar, string(finalRepresentation[j]))
+			for j := len(representation) - 1; j >= 0; j-- {
+				//fmt.Println(j, ichar, string(representation[j]))
 				if j <= ichar {
 					break
 				}
-				if string(finalRepresentation[j]) != "." {
-					fileId := string(finalRepresentation[j])
-					finalRepresentation[ichar] = fileId
-					finalRepresentation[j] = "."
+				if string(representation[j]) != "." {
+					fileId := string(representation[j])
+					representation[ichar] = fileId
+					representation[j] = "."
 					break
 				}
 			}
 		}
 	}
-	return finalRepresentation
+	return representation
 }
 
-func reorder2(extendedRepresentation []string, line string) []string {
-	finalRepresentation := extendedRepresentation
+func reorder2(representation []string) []string {
 	lastFileId := "."
-	for j := len(finalRepresentation) - 1; j >= 0; j-- {
-		fileId := string(finalRepresentation[j])
+	for j := len(representation) - 1; j >= 0; j-- {
+		fileId := string(representation[j])
 		if fileId == "." || fileId == lastFileId {
 			continue
 		}
 
 		blockLength := 0
 		for i := j; i >= 0; i-- {
-			if string(finalRepresentation[i]) != fileId {
+			if string(representation[i]) != fileId {
 				break
 			} else {
 				blockLength++
 			}
 		}
 
-		for ichar, char := range finalRepresentation {
+		for ichar, char := range representation {
 			if j <= ichar {
 				break
 			}
 			if string(char) == "." {
 				voidLength := 0
-				for i := 0; i < len(finalRepresentation)-ichar; i++ {
-					if string(finalRepresentation[ichar+i]) != "." {
+				for i := 0; i < len(representation)-ichar; i++ {
+					if string(representation[ichar+i]) != "." {
 						break
 					} else {
 						voidLength++
 					}
 				}
-				if string(finalRepresentation[j]) != "." {
-					//fmt.Println(blockLength, voidLength, finalRepresentation)
+				if string(representation[j]) != "." {
+					//fmt.Println(blockLength, voidLength, representation)
 					if blockLength <= voidLength {
 						for i := 0; i < blockLength; i++ {
-							finalRepresentation[ichar+i] = fileId
-							finalRepresentation[j-i] = "."
+							representation[ichar+i] = fileId
+							representation[j-i] = "."
 						}
 						break
 					}
@@ -119,26 +116,26 @@ func reorder2(extendedRepresentation []string, line string) []string {
 		}
 		lastFileId = fileId
 	}
-	return finalRepresentation
+	return representation
 }
 
 func main() {
-	//inputFile := "inputtest2"
-	inputFile := "input"
+	inputFile := "inputtest"
+	//inputFile := "input"
 	line := readLines(inputFile)[0]
-	fmt.Println(line)
-	extendedRepresentation := extendRepresentation(line)
-	fmt.Println(extendedRepresentation)
 
 	//Problem 1
+	extendedRepresentation := extendRepresentation(line)
+	//fmt.Println(extendedRepresentation)
 	finalRepresentation := reorder1(extendedRepresentation)
 	fmt.Println(finalRepresentation)
 	fmt.Println("checksum:")
 	fmt.Println(getChecksum(finalRepresentation))
 
 	//Problem 2
-	finalRepresentation2 := reorder2(extendedRepresentation, line)
-	fmt.Println(finalRepresentation2)
+	extendedRepresentation2 := extendRepresentation(line)
+	finalRepresentation2 := reorder2(extendedRepresentation2)
+	//fmt.Println(finalRepresentation2)
 	fmt.Println("checksum 2:")
 	fmt.Println(getChecksum(finalRepresentation2))
 }
