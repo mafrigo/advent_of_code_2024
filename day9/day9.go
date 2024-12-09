@@ -128,7 +128,7 @@ func main() {
 	extendedRepresentation := extendRepresentation(line)
 	//fmt.Println(extendedRepresentation)
 	finalRepresentation := reorder1(extendedRepresentation)
-	fmt.Println(finalRepresentation)
+	//fmt.Println(finalRepresentation)
 	fmt.Println("checksum:")
 	fmt.Println(getChecksum(finalRepresentation))
 
