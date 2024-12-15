@@ -78,7 +78,27 @@ func printGrid(grid map[[2]int]string) {
 	}
 }
 
-func canBoxMoveUpOrDown(grid map[[2]int]string, boxLoc [2]int, move [2]int) bool {
+func canItemMove(grid map[[2]int]string, itemLoc [2]int, move [2]int) bool {
+	itemCanMove := false
+	nextLoc := [2]int{itemLoc[0] + move[0], itemLoc[1] + move[1]}
+	itemType, spaceOccupied := grid[nextLoc]
+	if !spaceOccupied {
+		itemCanMove = true
+	} else {
+		if itemType == "#" {
+			itemCanMove = false
+		}
+		if itemType == "[" || itemType == "]" {
+			itemCanMove = canBigBoxMove(grid, nextLoc, move)
+		}
+		if itemType == "O" {
+			itemCanMove = canItemMove(grid, nextLoc, move)
+		}
+	}
+	return itemCanMove
+}
+
+func canBigBoxMove(grid map[[2]int]string, boxLoc [2]int, move [2]int) bool {
 	boxType, _ := grid[boxLoc]
 	var boxLeftLoc [2]int
 	var boxRightLoc [2]int
@@ -89,91 +109,50 @@ func canBoxMoveUpOrDown(grid map[[2]int]string, boxLoc [2]int, move [2]int) bool
 		boxRightLoc = boxLoc
 		boxLeftLoc = [2]int{boxLoc[0], boxLoc[1] - 1}
 	}
-	nextLocLeft := [2]int{boxLeftLoc[0] + move[0], boxLeftLoc[1]}
-	nextLocRight := [2]int{boxRightLoc[0] + move[0], boxRightLoc[1]}
-	leftCanMove := false
-	itemTypeLeft, spaceOccupiedLeft := grid[nextLocLeft]
-	if !spaceOccupiedLeft {
-		leftCanMove = true
+	if move[1] == -1 {
+		return canItemMove(grid, boxLeftLoc, move)
+	} else if move[1] == 1 {
+		return canItemMove(grid, boxRightLoc, move)
 	} else {
-		if itemTypeLeft == "#" {
-			leftCanMove = false
-		}
-		if itemTypeLeft == "[" || itemTypeLeft == "]" {
-			leftCanMove = canBoxMoveUpOrDown(grid, nextLocLeft, move)
-		}
+		return canItemMove(grid, boxLeftLoc, move) && canItemMove(grid, boxRightLoc, move)
 	}
-	rightCanMove := false
-	itemTypeRight, spaceOccupiedRight := grid[nextLocRight]
-	if !spaceOccupiedRight {
-		rightCanMove = true
-	} else {
-		if itemTypeRight == "#" {
-			rightCanMove = false
-		}
-		if itemTypeRight == "[" || itemTypeRight == "]" {
-			rightCanMove = canBoxMoveUpOrDown(grid, nextLocRight, move)
-		}
-	}
-	return leftCanMove && rightCanMove
 }
 
 func moveItems(grid map[[2]int]string, itemLoc [2]int, move [2]int) map[[2]int]string {
 	currentItemType, _ := grid[itemLoc]
 	if currentItemType == "[" || currentItemType == "]" {
-		if move == [2]int{1, 0} || move == [2]int{-1, 0} {
-			var itemLoc2 [2]int
-			if currentItemType == "[" {
-				itemLoc2 = [2]int{itemLoc[0], itemLoc[1] + 1}
-			}
-			if currentItemType == "]" {
-				itemLoc2 = [2]int{itemLoc[0], itemLoc[1] - 1}
-			}
-			nextLocation := [2]int{itemLoc[0] + move[0], itemLoc[1] + move[1]}
-			nextLocation2 := [2]int{itemLoc2[0] + move[0], itemLoc2[1] + move[1]}
-			if canBoxMoveUpOrDown(grid, itemLoc, move) {
+		if canBigBoxMove(grid, itemLoc, move) {
+			if move == [2]int{1, 0} || move == [2]int{-1, 0} {
+				var itemLoc2 [2]int
+				if currentItemType == "[" {
+					itemLoc2 = [2]int{itemLoc[0], itemLoc[1] + 1}
+				}
+				if currentItemType == "]" {
+					itemLoc2 = [2]int{itemLoc[0], itemLoc[1] - 1}
+				}
+				nextLocation := [2]int{itemLoc[0] + move[0], itemLoc[1] + move[1]}
+				nextLocation2 := [2]int{itemLoc2[0] + move[0], itemLoc2[1] + move[1]}
 				grid = moveItems(grid, nextLocation, move)
 				grid = moveItems(grid, nextLocation2, move)
 				grid[nextLocation] = grid[itemLoc]
 				grid[nextLocation2] = grid[itemLoc2]
 				delete(grid, itemLoc)
 				delete(grid, itemLoc2)
-			}
-		} else {
-			nextLocation := [2]int{itemLoc[0] + move[0]*2, itemLoc[1] + move[1]*2}
-			nextLocation2 := [2]int{itemLoc[0] + move[0], itemLoc[1] + move[1]}
-			nextItemType, spaceOccupied := grid[nextLocation]
-			if !spaceOccupied {
+			} else {
+				nextLocation := [2]int{itemLoc[0] + move[0]*2, itemLoc[1] + move[1]*2}
+				nextLocation2 := [2]int{itemLoc[0] + move[0], itemLoc[1] + move[1]}
+				grid = moveItems(grid, nextLocation, move)
 				grid[nextLocation] = grid[nextLocation2]
 				grid[nextLocation2] = grid[itemLoc]
 				delete(grid, itemLoc)
-			} else {
-				if nextItemType == "[" || nextItemType == "]" {
-					grid = moveItems(grid, nextLocation, move)
-					_, boxHasNotMoved := grid[nextLocation]
-					if !boxHasNotMoved {
-						grid[nextLocation] = grid[nextLocation2]
-						grid[nextLocation2] = grid[itemLoc]
-						delete(grid, itemLoc)
-					}
-				}
 			}
 		}
 	} else if currentItemType == "@" || currentItemType == "O" {
 		nextLocation := [2]int{itemLoc[0] + move[0], itemLoc[1] + move[1]}
-		nextItemType, spaceOccupied := grid[nextLocation]
-		if !spaceOccupied {
+		if canItemMove(grid, itemLoc, move) {
+			grid = moveItems(grid, nextLocation, move)
 			grid[nextLocation] = grid[itemLoc]
 			delete(grid, itemLoc)
-		} else {
-			if nextItemType == "[" || nextItemType == "]" || nextItemType == "O" {
-				grid = moveItems(grid, nextLocation, move)
-				_, boxHasNotMoved := grid[nextLocation]
-				if !boxHasNotMoved {
-					grid[nextLocation] = grid[itemLoc]
-					delete(grid, itemLoc)
-				}
-			}
 		}
 	}
 	//printGrid(grid)
