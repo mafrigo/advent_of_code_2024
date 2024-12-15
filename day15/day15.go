@@ -131,22 +131,13 @@ func moveItems(grid map[[2]int]string, itemLoc [2]int, move [2]int) map[[2]int]s
 			}
 			nextLocation := [2]int{itemLoc[0] + move[0], itemLoc[1] + move[1]}
 			nextLocation2 := [2]int{itemLoc2[0] + move[0], itemLoc2[1] + move[1]}
-			_, spaceOccupied := grid[nextLocation]
-			_, spaceOccupied2 := grid[nextLocation2]
-			if !spaceOccupied && !spaceOccupied2 {
+			if canBoxMoveUpOrDown(grid, itemLoc, move) {
+				grid = moveItems(grid, nextLocation, move)
+				grid = moveItems(grid, nextLocation2, move)
 				grid[nextLocation] = grid[itemLoc]
-				delete(grid, itemLoc)
 				grid[nextLocation2] = grid[itemLoc2]
+				delete(grid, itemLoc)
 				delete(grid, itemLoc2)
-			} else {
-				if canBoxMoveUpOrDown(grid, itemLoc, move) {
-					grid = moveItems(grid, nextLocation, move)
-					grid = moveItems(grid, nextLocation2, move)
-					grid[nextLocation] = grid[itemLoc]
-					grid[nextLocation2] = grid[itemLoc2]
-					delete(grid, itemLoc)
-					delete(grid, itemLoc2)
-				}
 			}
 		} else {
 			nextLocation := [2]int{itemLoc[0] + move[0]*2, itemLoc[1] + move[1]*2}
