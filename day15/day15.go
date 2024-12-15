@@ -130,21 +130,19 @@ func moveItems(grid map[[2]int]string, itemLoc [2]int, move [2]int) map[[2]int]s
 	currentItemType, _ := grid[itemLoc]
 	if currentItemType == "[" || currentItemType == "]" {
 		if canBigBoxMove(grid, itemLoc, move) {
+			var itemLoc2 [2]int
 			if move == [2]int{1, 0} || move == [2]int{-1, 0} {
-				var itemLoc2 [2]int
 				if currentItemType == "[" {
 					itemLoc2 = [2]int{itemLoc[0], itemLoc[1] + 1}
 				}
 				if currentItemType == "]" {
 					itemLoc2 = [2]int{itemLoc[0], itemLoc[1] - 1}
 				}
-				grid = executeMove(grid, itemLoc, move)
-				grid = executeMove(grid, itemLoc2, move)
 			} else {
-				itemLoc2 := [2]int{itemLoc[0] + move[0], itemLoc[1] + move[1]}
-				grid = executeMove(grid, itemLoc2, move)
-				grid = executeMove(grid, itemLoc, move)
+				itemLoc2 = [2]int{itemLoc[0] + move[0], itemLoc[1] + move[1]}
 			}
+			grid = executeMove(grid, itemLoc2, move)
+			grid = executeMove(grid, itemLoc, move)
 		}
 	} else if currentItemType == "@" || currentItemType == "O" {
 		if canItemMove(grid, itemLoc, move) {
