@@ -118,6 +118,14 @@ func canBigBoxMove(grid map[[2]int]string, boxLoc [2]int, move [2]int) bool {
 	}
 }
 
+func executeMove(grid map[[2]int]string, itemLoc [2]int, move [2]int) map[[2]int]string {
+	nextLocation := [2]int{itemLoc[0] + move[0], itemLoc[1] + move[1]}
+	grid = moveItems(grid, nextLocation, move)
+	grid[nextLocation] = grid[itemLoc]
+	delete(grid, itemLoc)
+	return grid
+}
+
 func moveItems(grid map[[2]int]string, itemLoc [2]int, move [2]int) map[[2]int]string {
 	currentItemType, _ := grid[itemLoc]
 	if currentItemType == "[" || currentItemType == "]" {
@@ -130,29 +138,17 @@ func moveItems(grid map[[2]int]string, itemLoc [2]int, move [2]int) map[[2]int]s
 				if currentItemType == "]" {
 					itemLoc2 = [2]int{itemLoc[0], itemLoc[1] - 1}
 				}
-				nextLocation := [2]int{itemLoc[0] + move[0], itemLoc[1] + move[1]}
-				nextLocation2 := [2]int{itemLoc2[0] + move[0], itemLoc2[1] + move[1]}
-				grid = moveItems(grid, nextLocation, move)
-				grid = moveItems(grid, nextLocation2, move)
-				grid[nextLocation] = grid[itemLoc]
-				grid[nextLocation2] = grid[itemLoc2]
-				delete(grid, itemLoc)
-				delete(grid, itemLoc2)
+				grid = executeMove(grid, itemLoc, move)
+				grid = executeMove(grid, itemLoc2, move)
 			} else {
-				nextLocation := [2]int{itemLoc[0] + move[0]*2, itemLoc[1] + move[1]*2}
-				nextLocation2 := [2]int{itemLoc[0] + move[0], itemLoc[1] + move[1]}
-				grid = moveItems(grid, nextLocation, move)
-				grid[nextLocation] = grid[nextLocation2]
-				grid[nextLocation2] = grid[itemLoc]
-				delete(grid, itemLoc)
+				itemLoc2 := [2]int{itemLoc[0] + move[0], itemLoc[1] + move[1]}
+				grid = executeMove(grid, itemLoc2, move)
+				grid = executeMove(grid, itemLoc, move)
 			}
 		}
 	} else if currentItemType == "@" || currentItemType == "O" {
-		nextLocation := [2]int{itemLoc[0] + move[0], itemLoc[1] + move[1]}
 		if canItemMove(grid, itemLoc, move) {
-			grid = moveItems(grid, nextLocation, move)
-			grid[nextLocation] = grid[itemLoc]
-			delete(grid, itemLoc)
+			grid = executeMove(grid, itemLoc, move)
 		}
 	}
 	//printGrid(grid)
@@ -174,8 +170,8 @@ func moveRobot(grid map[[2]int]string, instructions string) map[[2]int]string {
 	moveMap := map[string][2]int{"^": [2]int{-1, 0}, "v": [2]int{1, 0}, "<": [2]int{0, -1}, ">": [2]int{0, 1}}
 	for i := 0; i < len(instructions); i++ {
 		robotPos := findRobot(grid)
-		nextMove := moveMap[string(instructions[i])]
-		grid = moveItems(grid, robotPos, nextMove)
+		move := moveMap[string(instructions[i])]
+		grid = moveItems(grid, robotPos, move)
 	}
 	return grid
 }
