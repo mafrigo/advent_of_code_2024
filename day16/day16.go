@@ -201,9 +201,9 @@ func main() {
 	scoreMap = populateScoreMap(grid)
 	//fmt.Println(scoreMap)
 	endPosOri, minScore := findEndScore(grid, scoreMap)
-	fmt.Println("Minimum score (part1): ", minScore)
 
 	pathCells := getBestPaths(scoreMap, endPosOri)
 	printGrid(grid, pathCells)
+	fmt.Println("Minimum score (part1): ", minScore)
 	fmt.Println("Number of cells on one of the best paths (part2): ", len(pathCells))
 }
