@@ -29,10 +29,20 @@ func readGrid(filename string) [][]string {
 	return grid
 }
 
-func printGrid(grid [][]string) {
-	for _, line := range grid {
-		for _, char := range line {
-			fmt.Print(string(char))
+func printGrid(grid [][]string, path [][2]int) {
+	for iline, line := range grid {
+		for ichar, char := range line {
+			inPath := false
+			for _, cell := range path {
+				if cell == [2]int{iline, ichar} {
+					inPath = true
+				}
+			}
+			if inPath && string(char) != "S" && string(char) != "E" {
+				fmt.Print(string("O"))
+			} else {
+				fmt.Print(string(char))
+			}
 		}
 		fmt.Println()
 	}
@@ -139,7 +149,7 @@ func getSmallestScoreUnvisitedLocation(scoreMap map[positionOrientation]int, unv
 	return smallestPosOri
 }
 
-func getNumCellsBestPath(scoreMap map[positionOrientation]int, end positionOrientation) int {
+func getBestPaths(scoreMap map[positionOrientation]int, end positionOrientation) [][2]int {
 	moveStraightMap := map[string][2]int{"^": [2]int{-1, 0}, "v": [2]int{1, 0}, "<": [2]int{0, -1}, ">": [2]int{0, 1}}
 	moveLeftMap := map[string]string{"^": "<", "v": ">", "<": "v", ">": "^"}
 	moveRightMap := map[string]string{"^": ">", "v": "<", "<": "^", ">": "v"}
@@ -180,18 +190,20 @@ func getNumCellsBestPath(scoreMap map[positionOrientation]int, end positionOrien
 			posBestPath = append(posBestPath, posOri.position)
 		}
 	}
-	return len(posBestPath)
+	return posBestPath
 }
 
 func main() {
-	inputFile := "input"
+	inputFile := "inputtest2"
+	//inputFile := "input"
 	grid := readGrid(inputFile)
-	//printGrid(grid)
+	//printGrid(grid, [][2]int{})
 	scoreMap = populateScoreMap(grid)
 	//fmt.Println(scoreMap)
 	endPosOri, minScore := findEndScore(grid, scoreMap)
 	fmt.Println("Minimum score (part1): ", minScore)
 
-	numSeats := getNumCellsBestPath(scoreMap, endPosOri)
-	fmt.Println("Number of cells on one of the best paths (part2): ", numSeats)
+	pathCells := getBestPaths(scoreMap, endPosOri)
+	printGrid(grid, pathCells)
+	fmt.Println("Number of cells on one of the best paths (part2): ", len(pathCells))
 }
