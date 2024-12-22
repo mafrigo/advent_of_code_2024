@@ -40,7 +40,6 @@ func main() {
 	//inputFile := "inputtest2"
 	inputFile := "input"
 	prices := readPrices(inputFile)
-	//fmt.Println(prices)
 	nIterations := 2000
 	priceMap = make(map[[4]int]int)
 	sumOfEndPrices := 0
