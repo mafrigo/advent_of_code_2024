@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"sort"
 	"strings"
 )
 
@@ -80,25 +81,6 @@ func appendIfNew(listTriplets [][3]string, triplet [3]string) [][3]string {
 	return listTriplets
 }
 
-func appendIfNew2(listTriplets [][]string, triplet []string) [][]string {
-	tripletIsInList := false
-	for _, triplet2 := range listTriplets {
-		if (triplet[0] == triplet2[0] && triplet[1] == triplet2[1] && triplet[2] == triplet2[2]) ||
-			(triplet[0] == triplet2[1] && triplet[1] == triplet2[0] && triplet[2] == triplet2[2]) ||
-			(triplet[0] == triplet2[2] && triplet[1] == triplet2[1] && triplet[2] == triplet2[0]) ||
-			(triplet[0] == triplet2[0] && triplet[1] == triplet2[2] && triplet[2] == triplet2[1]) ||
-			(triplet[0] == triplet2[1] && triplet[1] == triplet2[2] && triplet[2] == triplet2[0]) ||
-			(triplet[0] == triplet2[2] && triplet[1] == triplet2[0] && triplet[2] == triplet2[1]) {
-			tripletIsInList = true
-		}
-	}
-	//fmt.Println(triplet, listTriplets, tripletIsInList)
-	if !tripletIsInList {
-		listTriplets = append(listTriplets, triplet)
-	}
-	return listTriplets
-}
-
 func findTriplets(startLetter string) int {
 	listTriplets := [][3]string{}
 	for computer, connectedComputers := range mapConnections {
@@ -116,8 +98,6 @@ func findTriplets(startLetter string) int {
 	//fmt.Println(listTriplets)
 	return len(listTriplets)
 }
-
-var visited map[string]bool
 
 func findConnectedClusters(connections [][]string) []map[string]bool {
 	connectedClusters := []map[string]bool{}
@@ -145,41 +125,7 @@ func findConnectedClusters(connections [][]string) []map[string]bool {
 	return connectedClusters
 }
 
-func countTripletsT(connectedClusters []map[string]bool) int {
-	countTripletsT := 0
-	triplets := [][]string{}
-	for _, cluster := range connectedClusters {
-		if len(cluster) == 3 {
-			clusterList := []string{}
-			for computer, _ := range cluster {
-				clusterList = append(clusterList, computer)
-			}
-			for computer, _ := range cluster {
-				if string(computer[0]) == "t" {
-					countTripletsT++
-					triplets = appendIfNew2(triplets, clusterList)
-					break
-				}
-			}
-		}
-	}
-	//fmt.Println(countTripletsT, triplets, len(triplets))
-	return countTripletsT
-}
-
-func main() {
-	inputFile := "inputtest"
-	//inputFile := "input"
-	connections := readConnections(inputFile)
-	//fmt.Println(connections)
-	writeMapConnections(connections)
-	//fmt.Println(mapConnections)
-	nTriplets := findTriplets("t")
-	fmt.Println("Number of triple connections with one computer starting with t (part 1) : ", nTriplets)
-	connectedClusters := findConnectedClusters(connections)
-	nTriplets2 := countTripletsT(connectedClusters)
-	//fmt.Println(connectedClusters)
-	fmt.Println(nTriplets2)
+func getLargestCluster(connectedClusters []map[string]bool) []string {
 	largest := connectedClusters[0]
 	for _, cluster := range connectedClusters {
 		if len(cluster) > len(largest) {
@@ -190,5 +136,24 @@ func main() {
 	for computer, _ := range largest {
 		largestList = append(largestList, computer)
 	}
-	fmt.Println("Largest interconnected group (part 2): ", largestList) //must still be ordered alphabetically
+	return largestList
+}
+
+func toOrderedString(computerList []string) string {
+	sort.Slice(computerList, func(i, j int) bool {
+		return int(computerList[j][0])*100+int(computerList[j][1]) > int(computerList[i][0])*100+int(computerList[i][1])
+	})
+	return strings.Join(computerList, ",")
+}
+
+func main() {
+	//inputFile := "inputtest"
+	inputFile := "input"
+	connections := readConnections(inputFile)
+	writeMapConnections(connections) //saved into mapConnections
+	nTriplets := findTriplets("t")
+	fmt.Println("Number of triple connections with one computer starting with t (part 1) : ", nTriplets)
+	connectedClusters := findConnectedClusters(connections)
+	largestCluster := getLargestCluster(connectedClusters)
+	fmt.Println("Largest interconnected group (part 2): ", toOrderedString(largestCluster))
 }
