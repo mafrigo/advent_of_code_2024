@@ -10,6 +10,8 @@ import (
 	"strings"
 )
 
+var infinity int
+
 func readFile(filename string) (map[string]int, [][]string) {
 	file, err := os.Open(filename)
 	if err != nil {
@@ -39,7 +41,7 @@ func readFile(filename string) (map[string]int, [][]string) {
 
 func findClosestUnvisitedOperation(operations [][]string, unvisitedOperations map[[3]string]bool, operationDistance map[[3]string]int, unvisitedOperationsByOperand map[[3]string][2]bool) []string {
 	closest := []string{"notfound", "", "", "", ""}
-	operationDistance[[3]string{closest[0], closest[2], closest[4]}] = 10000000000000000
+	operationDistance[[3]string{closest[0], closest[2], closest[4]}] = infinity
 	for _, operation := range operations {
 		currentOp := [3]string{operation[0], operation[2], operation[4]}
 		if unvisitedOperations[currentOp] {
@@ -52,7 +54,7 @@ func findClosestUnvisitedOperation(operations [][]string, unvisitedOperations ma
 }
 
 func orderOperations(operations [][]string, state map[string]int) [][]string {
-	infinity := 100000000000
+	infinity = 100000000000
 	unvisitedOperations := map[[3]string]bool{}
 	unvisitedOperationsByOperand := map[[3]string][2]bool{}
 	operationDistance := map[[3]string]int{}
@@ -170,7 +172,7 @@ func checkIfAddition(zValue string, operations [][]string) []string {
 	yCurrent := "y" + formatLevel(currentLevel)
 	xPrevious := "x" + formatLevel(currentLevel-1)
 	yPrevious := "y" + formatLevel(currentLevel-1)
-	wrongOutputs := []string{}
+	valuesToBeSwitched := []string{}
 	currentXor := []string{}
 	previousXor := []string{}
 	previousAnd := []string{}
@@ -232,16 +234,16 @@ func checkIfAddition(zValue string, operations [][]string) []string {
 	}
 	if len(xorOperation) > 0 {
 		if xorOperation[4] != zValue {
-			wrongOutputs = append(wrongOutputs, []string{xorOperation[4], zValue}...)
+			valuesToBeSwitched = append(valuesToBeSwitched, []string{xorOperation[4], zValue}...)
 		}
 	} else {
 		if currentXor[4] != zOperation[0] && orOperation[4] == zOperation[2] {
-			wrongOutputs = append(wrongOutputs, currentXor[4], zOperation[0])
+			valuesToBeSwitched = append(valuesToBeSwitched, currentXor[4], zOperation[0])
 		} else if currentXor[4] == zOperation[0] && orOperation[4] != zOperation[2] {
-			wrongOutputs = append(wrongOutputs, currentXor[4], zOperation[2])
+			valuesToBeSwitched = append(valuesToBeSwitched, currentXor[4], zOperation[2])
 		}
-	}
-	return wrongOutputs
+	} // more cases are possible, but these two checks seem to be enough for the given input
+	return valuesToBeSwitched
 }
 
 func toOrderedString(myList []string) string {
@@ -251,16 +253,7 @@ func toOrderedString(myList []string) string {
 	return strings.Join(myList, ",")
 }
 
-func main() {
-	//inputFile := "inputtest4"
-	inputFile := "input"
-	state, operations := readFile(inputFile)
-	operations = orderOperations(operations, state)
-	for _, operation := range operations {
-		state = calculateOperation(state, operation)
-	}
-	//fmt.Println(state)
-	fmt.Println("Result of operations (part 1): ", getResult(state, "z"))
+func getWrongZValuesForAddition(state map[string]int) []string {
 	x := getResult(state, "x")
 	y := getResult(state, "y")
 	expectedZ := x + y
@@ -277,17 +270,23 @@ func main() {
 			wrongZValues = append(wrongZValues, zString)
 		}
 	}
-	fmt.Println("Wrong z values: ", wrongZValues)
-	wrongOutputs := []string{}
-	for _, zValue := range wrongZValues {
-		wrongOutputs = append(wrongOutputs, checkIfAddition(zValue, operations)...)
+	return wrongZValues
+}
 
+func main() {
+	//inputFile := "inputtest4"
+	inputFile := "input"
+	state, operations := readFile(inputFile)
+	operations = orderOperations(operations, state)
+	for _, operation := range operations {
+		state = calculateOperation(state, operation)
 	}
-	fmt.Println("Values that need to be ordered (part 2): ", toOrderedString(wrongOutputs))
-	/*
-		7: gmt z07
-		11: cbj qjj
-		18: dmn z18
-		35: z35 cfk
-	*/
+	fmt.Println("Result of operations (part 1): ", getResult(state, "z"))
+	wrongZValues := getWrongZValuesForAddition(state)
+	fmt.Println("Wrong z values: ", wrongZValues)
+	valuesToBeSwitched := []string{}
+	for _, zValue := range wrongZValues {
+		valuesToBeSwitched = append(valuesToBeSwitched, checkIfAddition(zValue, operations)...)
+	}
+	fmt.Println("Values that need to be ordered (part 2): ", toOrderedString(valuesToBeSwitched))
 }
